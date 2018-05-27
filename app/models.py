@@ -4,6 +4,8 @@ from flask_login import UserMixin, AnonymousUserMixin
 from . import login_manager
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
+from datetime import datetime
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -69,7 +71,7 @@ class User(UserMixin, db.Model):
 
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))    
 
-    blogs = db.relationship("Blog", backref = "user", lazy = "dynamic")
+    blogs = db.relationship("Blog", backref = "author", lazy = "dynamic")
 
     comments = db.relationship("Comment", backref = "user", lazy = "dynamic")
 
@@ -148,9 +150,10 @@ class Blog(db.Model):
 
     id = db.Column(db.Integer,primary_key = True)
     title = db.Column(db.String(255))
-    content = db.Column(db.String)
+    content = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index = True, default = datetime.utcnow)
 
-    user_id = db.Column(db.Integer,db.ForeignKey("users.id"))
+    author_id = db.Column(db.Integer,db.ForeignKey("users.id"))
 
     comments = db.relationship("Comment", backref = "blog", lazy = "dynamic")
 
