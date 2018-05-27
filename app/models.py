@@ -1,6 +1,7 @@
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from . import login_manager
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -15,7 +16,7 @@ class Role(db.Model):
     users = db.relationship('User', backref = 'role', lazy = 'dynamic')
 
     def __repr__(self):
-        return '<Role %r>' % self.name
+        return f'User {self.name}'
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -45,7 +46,7 @@ class User(UserMixin, db.Model):
 
     # Method to give the models a readable string representation to facilitate debugging and testing
     def __repr__(self):
-        return '<User %r>' % self.username
+        return f'User {self.username}'
 
 
 class Blog(db.Model):

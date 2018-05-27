@@ -10,18 +10,18 @@ class RegistrationForm(FlaskForm):
     password = PasswordField('Password',validators = [Required(),
     EqualTo('password_confirm',message = 'Passwords must match')])
     password_confirm = PasswordField('Confirm Passwords',validators = [Required()])
-    submit = SubmitField('Sign Up')
+    submit = SubmitField('Register')
 
     def validate_email(self,data_field):
         if User.query.filter_by(email = data_field.data).first():
-            raise ValidationError('There is an account with that email')
+            raise ValidationError('Email already registered')
         
     def validate_username(self,data_field):
         if User.query.filter_by(username = data_field.data).first():
-            raise ValidationError('That username is taken')
+            raise ValidationError('Username already in use.')
 
 class LoginForm(FlaskForm):
     email = StringField('Your Email Address',validators = [Required(),Email()])
     password = PasswordField('Password',validators = [Required()])
-    remember = BooleanField('Remember me')
-    submit = SubmitField('Sign In')
+    remember = BooleanField('Keep me logged in')
+    submit = SubmitField('Log In')

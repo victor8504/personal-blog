@@ -26,9 +26,8 @@
                 </div>
             </li> -->
         </ul>
-        <ul class="nav navbar-nav navbar-right">
+        <ul class="navbar-nav flex-row ml-md-auto d-none d-md-flex">
             {% if current_user.is_authenticated %}
-                <li><a href="{{url_for('main.profile',uname = current_user.username)}}">Profile</a></li>
                 <li><a href="{{url_for('auth.logout')}}">Sign out</a></li>
             {% else %}
                 <li><a href="{{url_for('auth.login')}}">Sign in</a></li>
