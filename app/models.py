@@ -72,7 +72,7 @@ class User(UserMixin, db.Model):
 
     blogs = db.relationship("Blog", backref = "author", lazy = "dynamic")
 
-    comments = db.relationship("Comment", backref = "user", lazy = "dynamic")
+    comments = db.relationship("Comment", backref = "author", lazy = "dynamic")
 
     @property
     def password(self):
@@ -202,8 +202,10 @@ class Comment(db.Model):
 
     id = db.Column(db.Integer,primary_key = True)
     content = db.Column(db.String)
+    timestamp = db.Column(db.DateTime, index = True, default = datetime.utcnow)
+    
 
-    user_id = db.Column(db.Integer,db.ForeignKey("users.id"))
+    author_id = db.Column(db.Integer,db.ForeignKey("users.id"))
 
     blog_id = db.Column(db.Integer,db.ForeignKey("blogs.id"))
     
