@@ -1,11 +1,23 @@
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
 
-class User(db.Model):
+class Role(db.Model):
+    __tablename__ = 'roles'
+
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(64), unique = True)
+
+    users = db.relationship('User', backref = 'role', lazy = 'dynamic')
+
+    def __repr__(self):
+        return '<Role %r>' % self.name
+
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer,primary_key = True)
-    username = db.Column(db.String(255),index = True)
+    username = db.Column(db.String(255),unique = True, index = True)
     email = db.Column(db.String(255),unique = True, index = True)
 
     password_hash = db.Column(db.String(128))
@@ -21,9 +33,15 @@ class User(db.Model):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    blog = db.relationship("Blog", backref = "user", lazy = "dynamic")
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))    
 
-    comment = db.relationship("Comment", backref = "user", lazy = "dynamic")
+    blogs = db.relationship("Blog", backref = "user", lazy = "dynamic")
+
+    comments = db.relationship("Comment", backref = "user", lazy = "dynamic")
+
+    # Method to give the models a readable string representation to facilitate debugging and testing
+    def __repr__(self):
+        return '<User %r>' % self.username
 
 
 class Blog(db.Model):
@@ -35,7 +53,7 @@ class Blog(db.Model):
 
     user_id = db.Column(db.Integer,db.ForeignKey("users.id"))
 
-    comment = db.relationship("Comment", backref = "blog", lazy = "dynamic")
+    comments = db.relationship("Comment", backref = "blog", lazy = "dynamic")
 
 
 class Comment(db.Model):
