@@ -1,6 +1,6 @@
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin
+from flask_login import UserMixin, AnonymousUserMixin
 from . import login_manager
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
@@ -67,6 +67,12 @@ class User(UserMixin, db.Model):
 
     password_hash = db.Column(db.String(128))
 
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))    
+
+    blogs = db.relationship("Blog", backref = "user", lazy = "dynamic")
+
+    comments = db.relationship("Comment", backref = "user", lazy = "dynamic")
+
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
@@ -111,16 +117,29 @@ class User(UserMixin, db.Model):
         if self.role is None:
             self.role = Role.query.filter_by(default=True).first()
 
+        
+    # Evaluate whether a user has a given permission
+    def can(self, permissions):
+        return self.role is not None and \
+            (self.role.permissions & permissions) == permissions
 
-    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))    
+    def is_administrator(self):
+        return self.can(Permission.ADMINISTER)
 
-    blogs = db.relationship("Blog", backref = "user", lazy = "dynamic")
-
-    comments = db.relationship("Comment", backref = "user", lazy = "dynamic")
 
     # Method to give the models a readable string representation to facilitate debugging and testing
     def __repr__(self):
         return f'User {self.username}'
+
+    
+class AnonymousUser(AnonymousUserMixin):
+    def can(self, permissions):
+        return False
+    
+    def is_administrator(self):
+        return False
+
+login_manager.anonymous_user = AnonymousUser
 
 
 
