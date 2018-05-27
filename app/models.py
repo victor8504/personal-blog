@@ -6,7 +6,6 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from datetime import datetime
 
-
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -111,13 +110,13 @@ class User(UserMixin, db.Model):
         return True
 
     # Define a default role for users
-    def __init__(self, **kwargs):
-        super(User, self).__init__(**kwargs)
-        if self.role is None:
-            if self.email == current_app.config['FLASKY_ADMIN']:
-                self.role = Role.query.filter_by(permissions=0xff).first()
-        if self.role is None:
-            self.role = Role.query.filter_by(default=True).first()
+    # def __init__(self, **kwargs):
+    #     super(User, self).__init__(**kwargs)
+    #     if self.role is None:
+    #         if self.email == current_app.config['FLASKY_ADMIN']:
+    #             self.role = Role.query.filter_by(permissions=0xff).first()
+    #     if self.role is None:
+    #         self.role = Role.query.filter_by(default=True).first()
 
         
     # Evaluate whether a user has a given permission
@@ -127,6 +126,29 @@ class User(UserMixin, db.Model):
 
     def is_administrator(self):
         return self.can(Permission.ADMINISTER)
+
+
+    @staticmethod
+    def generate_fake(count=100):
+        from sqlalchemy.exc import IntegrityError
+        from random import seed
+        import forgery_py
+
+        seed()
+        for i in range(count):
+            u = User(email=forgery_py.internet.email_address(),
+                    username=forgery_py.internet.user_name(True),
+                    password=forgery_py.lorem_ipsum.word(),
+                    confirmed=True)
+
+            db.session.add(u)
+
+            try:
+                db.session.commit()
+
+            except IntegrityError:
+                db.session.rollback()
+
 
 
     # Method to give the models a readable string representation to facilitate debugging and testing
@@ -156,6 +178,22 @@ class Blog(db.Model):
     author_id = db.Column(db.Integer,db.ForeignKey("users.id"))
 
     comments = db.relationship("Comment", backref = "blog", lazy = "dynamic")
+
+
+    @staticmethod
+    def generate_fake(count=100):
+        from random import seed, randint
+        import forgery_py
+
+        seed()
+        user_count = User.query.count()
+        for i in range(count):
+            u = User.query.offset(randint(0, user_count - 1)).first()
+            b = Blog(content=forgery_py.lorem_ipsum.sentences(randint(1, 3)),
+                     timestamp=forgery_py.date.date(True),
+                     author=u)
+            db.session.add(b)
+            db.session.commit()
 
 
 
