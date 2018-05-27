@@ -1,4 +1,4 @@
-from flask import render_template,request,redirect,url_for,abort
+from flask import render_template,request,redirect,url_for,abort,flash
 from . import main
 from .forms import BlogForm
 from ..models import User, Blog
@@ -36,4 +36,23 @@ def index():
 
     blogs = Blog.query.order_by(Blog.timestamp.desc()).all()
     return render_template('index.html', blog_form = form, blogs = blogs)
+
+@main.route('/edit/<int:id>', methods = ['GET', 'POST'])
+@login_required
+def edit(id):
+    blog = Blog.query.get_or_404(id)
+    # if current_user != post.author and \
+    #     not current_user.can(Permission.ADMINISTER):
+    # abort(403)
+    form = BlogForm()
+    if form.validate_on_submit():
+        blog.content = form.content.data
+
+        db.session.add(blog)
+
+        flash('The blog has been updated.')
+
+        return redirect(url_for('post', id = blog.id))
+    form.content.data = blog.content
+    return render_template('edit_blog.html', blog_form=form)
 
