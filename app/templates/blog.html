@@ -1,0 +1,22 @@
+<ul class="blogs">
+        {% for post in posts %}
+        <li class="blog">
+        ...
+        <div class="blog-content">
+        ...
+        <div class="blog-footer">
+        ...
+        {% if current_user == blog.author %}
+        <a href="{{ url_for('.edit', id=blog.id) }}">
+        <span class="label label-primary">Edit</span>
+        </a>
+        {% elif current_user.is_administrator() %}
+        <a href="{{ url_for('.edit', id=blog.id) }}">
+        <span class="label label-danger">Edit [Admin]</span>
+        </a>
+        <a href="{{ url_for('.blog', id=blog.id) }}#comments">
+            <span class="label label-primary">
+                {{ blog.comments.count() }} Comments
+            </span>
+        </a>
+        {% endif %}

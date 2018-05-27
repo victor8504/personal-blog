@@ -37,6 +37,19 @@ def index():
     blogs = Blog.query.order_by(Blog.timestamp.desc()).all()
     return render_template('index.html', blog_form = form, blogs = blogs)
 
+
+@main.route('/blog/<int:id>')
+def blog(id):
+    blog = Blog.query.get(id)
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment = Comment(content = form.content.data, comment = commet, author = current_user._get_current_object())
+        db.session.add(comment)
+        flash("Your comment has been published")
+        return redirecct(url_for('.blog', id = blog.id))
+    return render_template('blog.html', blogs = [blog], comment_form = form, comment = comments)
+
+
 @main.route('/edit/<int:id>', methods = ['GET', 'POST'])
 @login_required
 def edit(id):
