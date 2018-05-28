@@ -1,6 +1,6 @@
 from flask import render_template,request,redirect,url_for,abort,flash
 from . import main
-from .forms import BlogForm
+from .forms import BlogForm, CommentForm
 from ..models import User, Blog
 from flask_login import login_required
 from .. import db
@@ -46,7 +46,7 @@ def blog(id):
         comment = Comment(content = form.content.data, comment = commet, author = current_user._get_current_object())
         db.session.add(comment)
         flash("Your comment has been published")
-        return redirecct(url_for('.blog', id = blog.id))
+        return redirect(url_for('.blog', id = blog.id))
     return render_template('blog.html', blogs = [blog], comment_form = form, comment = comments)
 
 
