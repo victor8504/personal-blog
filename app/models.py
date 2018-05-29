@@ -13,11 +13,11 @@ def load_user(user_id):
 
 # Listing the permission constants
 class Permission:
-    FOLLOW = '0*01'
-    COMMENT = '0*02'
-    WRITE_ARTICLES = '0*04'
-    MODERATE_COMMENTS = '0*08'
-    ADMINISTER = '0*80'
+    FOLLOW = 0x01
+    COMMENT = 0x02
+    WRITE_ARTICLES = 0x04
+    MODERATE_COMMENTS = 0x08
+    ADMINISTER = 0x80
 
 
 
@@ -43,7 +43,7 @@ class Role(db.Model):
                           Permission.COMMENT |
                           Permission.WRITE_ARTICLES |
                           Permission.MODERATE_COMMENTS, False),
-            'Administrator': (0*ff, False)
+            'Administrator': (0xff, False)
         }
         for r in roles:
             role = Role.query.filter_by(name = r).first()
@@ -110,13 +110,12 @@ class User(UserMixin, db.Model):
         return True
 
     # Define a default role for users
-    # def __init__(self, **kwargs):
-    #     super(User, self).__init__(**kwargs)
-    #     if self.role is None:
-    #         if self.email == current_app.config['FLASKY_ADMIN']:
-    #             self.role = Role.query.filter_by(permissions=0xff).first()
-    #     if self.role is None:
-    #         self.role = Role.query.filter_by(default=True).first()
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+        if self.email == current_app.config['FLASKY_ADMIN']:
+            self.role = Role.query.filter_by(permissions=0xff).first()
+        if self.role is None:
+            self.role = Role.query.filter_by(default=True).first()
 
         
     # Evaluate whether a user has a given permission
@@ -190,7 +189,7 @@ class Blog(db.Model):
         for i in range(count):
             u = User.query.offset(randint(0, user_count - 1)).first()
             b = Blog(content=forgery_py.lorem_ipsum.sentences(randint(1, 3)),
-                     timestamp=forgery_py.date.date(True),
+                     timestamp=forgery_py.date.date(),
                      author=u)
             db.session.add(b)
             db.session.commit()
